@@ -15,9 +15,9 @@ import java.util.Map;
 
 public class Peer implements Runnable
 {
-	static int k = 2;
-	static int alpha = 3;
-	static int bucketLength = 160;
+	static final int k = 2;
+	static final int alpha = 3;
+	static final int bucketLength = 160;
 
 	byte[] myGuid;
 	Map<byte[], String> hashTable;
@@ -40,8 +40,8 @@ public class Peer implements Runnable
 		try {
 			this.group = InetAddress.getByName(this.host);
 			this.socket = new MulticastSocket(this.port);
+//			this.socket.setLoopbackMode(true);
 			this.socket.joinGroup(this.group);
-			// this.socket.setLoopbackMode(true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -70,15 +70,15 @@ public class Peer implements Runnable
 	private int distance(byte[] key, byte[] guid)
 	{
 		int d = -1;
-		BitSet keyBit = BitSet.valueOf(key);
-		BitSet guidBit = BitSet.valueOf(guid);
-
 		System.out.println("key:" + key.length + ", guid: " + guid.length);
 
 		if (key.length != guid.length) {
 			System.out.println("ops");
 			return d;
 		}
+		
+		BitSet keyBit = BitSet.valueOf(key);
+		BitSet guidBit = BitSet.valueOf(guid);
 
 		d++;
 
@@ -107,6 +107,7 @@ public class Peer implements Runnable
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
+		
 		return key;
 	}
 
@@ -120,11 +121,10 @@ public class Peer implements Runnable
 			return myGuid;
 		}
 
-		while (guid == null && d < bucketLength) {
+		while (guid == null || d < bucketLength) {
 			guid = kBucket[d][0];
 			d++;
 		}
-		;
 
 		if (d == bucketLength) {
 			return myGuid;
@@ -223,17 +223,17 @@ public class Peer implements Runnable
 					break;
 				case "ping":
 					break;
-				// case "get":
-				// if (Arrays.equals(Base64.getDecoder().decode(cmd[2]),
-				// myGuid)) {
-				// if (cmd[3] == "petition") {
-				// get(cmd[4].getBytes());
-				// }
-				// if (cmd[3] == "response") {
-				// System.out.println(cmd[3]);
-				// }
-				// }
-				// break;
+//				 case "get":
+//				 if (Arrays.equals(Base64.getDecoder().decode(cmd[2]),
+//				 myGuid)) {
+//				 if (cmd[3] == "petition") {
+//				 get(cmd[4].getBytes());
+//				 }
+//				 if (cmd[3] == "response") {
+//				 System.out.println(cmd[3]);
+//				 }
+//				 }
+//				 break;
 				case "put":
 					if (Arrays.equals(Base64.getDecoder().decode(cmd[2]), myGuid)) {
 						put(cmd[3].getBytes(), cmd[3]);
