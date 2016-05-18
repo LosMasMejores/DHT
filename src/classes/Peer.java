@@ -12,6 +12,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class Peer implements Runnable
 {
 	static int k = 2;
@@ -40,12 +41,12 @@ public class Peer implements Runnable
 			this.group = InetAddress.getByName(this.host);
 			this.socket = new MulticastSocket(this.port);
 			this.socket.joinGroup(this.group);
-//			this.socket.setLoopbackMode(true);
+			// this.socket.setLoopbackMode(true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	
 	public byte[] put(byte[] key, String value)
 	{
@@ -73,7 +74,7 @@ public class Peer implements Runnable
 		BitSet guidBit = BitSet.valueOf(guid);
 
 		System.out.println("key:" + key.length + ", guid: " + guid.length);
-		
+
 		if (key.length != guid.length) {
 			System.out.println("ops");
 			return d;
@@ -88,7 +89,7 @@ public class Peer implements Runnable
 			}
 			d++;
 		}
-		
+
 		System.out.println("distance: " + d);
 
 		return d;
@@ -108,7 +109,7 @@ public class Peer implements Runnable
 		}
 		return key;
 	}
-	
+
 	
 	private byte[] getNode(byte[] key)
 	{
@@ -118,11 +119,12 @@ public class Peer implements Runnable
 		if (d == bucketLength) {
 			return myGuid;
 		}
-		
+
 		while (guid == null && d < bucketLength) {
 			guid = kBucket[d][0];
 			d++;
-		};
+		}
+		;
 
 		if (d == bucketLength) {
 			return myGuid;
@@ -141,11 +143,12 @@ public class Peer implements Runnable
 				return;
 			}
 		}
-		
+
 		for (int i = 0; i < k; i++) {
 			if (kBucket[d][i] == null) {
 				kBucket[d][i] = guid;
-				System.out.println(Base64.getEncoder().encodeToString(myGuid) + " added " + Base64.getEncoder().encodeToString(guid));
+				System.out.println(Base64.getEncoder().encodeToString(myGuid) + " added "
+						+ Base64.getEncoder().encodeToString(guid));
 				break;
 			}
 		}
@@ -161,7 +164,8 @@ public class Peer implements Runnable
 		for (int i = 0; i < k; i++) {
 			if (Arrays.equals(kBucket[d][i], guid)) {
 				kBucket[d][i] = null;
-				System.out.println(Base64.getEncoder().encodeToString(myGuid) + " deleted " + Base64.getEncoder().encodeToString(guid));
+				System.out.println(Base64.getEncoder().encodeToString(myGuid) + " deleted "
+						+ Base64.getEncoder().encodeToString(guid));
 				break;
 			}
 		}
@@ -193,16 +197,16 @@ public class Peer implements Runnable
 				System.out.println(Base64.getEncoder().encodeToString(myGuid) + " msg recived");
 
 				String cmd[] = (new String(recv.getData())).split(":");
-				
+
 				if (cmd.length < 2) {
 					continue;
 				}
-				
+
 				if (Arrays.equals(Base64.getDecoder().decode(cmd[0]), myGuid)) {
 					System.out.println(Base64.getEncoder().encodeToString(myGuid) + " my own msg");
 					continue;
 				}
-				
+
 				System.out.println(cmd[0] + " said " + cmd[1]);
 
 				switch (cmd[1]) {
@@ -219,16 +223,17 @@ public class Peer implements Runnable
 					break;
 				case "ping":
 					break;
-//				case "get":
-//					if (Arrays.equals(Base64.getDecoder().decode(cmd[2]), myGuid)) {
-//						if (cmd[3] == "petition") {
-//							get(cmd[4].getBytes());
-//						}
-//						if (cmd[3] == "response") {
-//							System.out.println(cmd[3]);
-//						}
-//					}
-//					break;
+				// case "get":
+				// if (Arrays.equals(Base64.getDecoder().decode(cmd[2]),
+				// myGuid)) {
+				// if (cmd[3] == "petition") {
+				// get(cmd[4].getBytes());
+				// }
+				// if (cmd[3] == "response") {
+				// System.out.println(cmd[3]);
+				// }
+				// }
+				// break;
 				case "put":
 					if (Arrays.equals(Base64.getDecoder().decode(cmd[2]), myGuid)) {
 						put(cmd[3].getBytes(), cmd[3]);
@@ -242,7 +247,7 @@ public class Peer implements Runnable
 				break;
 			}
 		}
-		
+
 		try {
 			String msg = Base64.getEncoder().encodeToString(myGuid) + ":bye:end";
 			socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, group, port));
