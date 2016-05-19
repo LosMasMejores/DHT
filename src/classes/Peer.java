@@ -23,22 +23,23 @@ public class Peer implements Runnable
 	Map<byte[], String> hashTable;
 	byte[][][] kBucket;
 
-	String host;
+	String ip;
 	int port;
 	InetAddress group;
 	MulticastSocket socket;
 
 	
-	public Peer(String identificador, String host, int port)
+	public Peer(String identificador, String ip, int port)
 	{
 		this.myGuid = sha1(identificador);
 		this.hashTable = new HashMap<>();
 		this.kBucket = new byte[bucketLength][k][];
-		this.host = host;
+		this.kBucket[bucketLength - 1][0] = this.myGuid;
+		this.ip = ip;
 		this.port = port;
 
 		try {
-			this.group = InetAddress.getByName(this.host);
+			this.group = InetAddress.getByName(this.ip);
 			this.socket = new MulticastSocket(this.port);
 //			this.socket.setLoopbackMode(true);
 			this.socket.joinGroup(this.group);
@@ -51,7 +52,25 @@ public class Peer implements Runnable
 	public byte[] put(byte[] key, String value)
 	{
 		byte[] guid = getNode(key);
-
+		
+		System.out.println(Base64.getEncoder().encodeToString(myGuid) + " is putting");
+		
+		if (Arrays.equals(guid, myGuid)) {
+			hashTable.put(key, value);
+			System.out.println(Base64.getEncoder().encodeToString(myGuid) + " its mine");
+			return guid;
+		}
+		
+		try {
+			String msg = Base64.getEncoder().encodeToString(myGuid) + ":put:" 
+					+ Base64.getEncoder().encodeToString(guid) + ":" 
+					+ Base64.getEncoder().encodeToString(key) +  ":" 
+					+ value + ":end";
+			socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, group, port));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		return guid;
 	}
 
@@ -80,14 +99,12 @@ public class Peer implements Runnable
 		BitSet keyBit = BitSet.valueOf(key);
 		BitSet guidBit = BitSet.valueOf(guid);
 
-		d++;
-
-		for (int i = 0; i < keyBit.length(); i++) {
+		for (int i = 0; i < 160; i++) {
 			System.out.println("key:" + keyBit.get(i) + ", guid: " + guidBit.get(i));
+			d++;
 			if (keyBit.get(i) != guidBit.get(i)) {
 				break;
 			}
-			d++;
 		}
 
 		System.out.println("distance: " + d);
@@ -117,21 +134,31 @@ public class Peer implements Runnable
 		byte[] guid = null;
 		int d = distance(key, myGuid);
 
-		if (d == bucketLength) {
-			return myGuid;
-		}
-
-		while (guid == null || d < bucketLength) {
+		while (guid == null) {
 			guid = kBucket[d][0];
+			if (guid == null) {
+				guid = kBucket[d][1];
+			}
 			d++;
-		}
-
-		if (d == bucketLength) {
-			return myGuid;
 		}
 
 		return guid;
 	}
+	
+//	private byte[][] getNodes(byte[] key)
+//	{
+//		byte[][] guid = new byte[alpha][];
+//
+//		for (int i = 0; i < alpha; i++) {
+//			int d = distance(key, myGuid);
+//			while (guid == null) {
+//				guid = kBucket[d][0];
+//				d++;
+//			}
+//		}
+//		
+//		return guid;
+//	}
 
 	
 	private void putIntoBucket(byte[] guid)
@@ -236,7 +263,7 @@ public class Peer implements Runnable
 //				 break;
 				case "put":
 					if (Arrays.equals(Base64.getDecoder().decode(cmd[2]), myGuid)) {
-						put(cmd[3].getBytes(), cmd[3]);
+						put(Base64.getDecoder().decode(cmd[3]), cmd[4]);
 					}
 					break;
 				default:
