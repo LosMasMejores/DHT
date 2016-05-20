@@ -1,27 +1,7 @@
 package classes;
 
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 
 public class Main {
-
-
-  static public byte[] sha1(String value)
-  {
-    byte[] key = null;
-
-    try {
-      MessageDigest md = MessageDigest.getInstance("SHA-1");
-      md.update(value.getBytes());
-      key = md.digest();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    }
-
-    return key;
-  }
 
 
   public static void main(String[] args) {
@@ -50,14 +30,25 @@ public class Main {
     System.out.println("fulana started");
     (new Thread(lina)).start();
     System.out.println("lina started");
+    
+//    try {
+//		Thread.sleep(1000);
+//	} catch (InterruptedException e) {
+//		e.printStackTrace();
+//	}
+
+    emilio.put(Peer.sha1("1"), "le gustan las flores");
+    mariano.put(Peer.sha1("2"), "le gustan los penes");
+    javier.put(Peer.sha1("1"), "le gustan las flores");
+    
     try {
-      System.in.read();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    emilio.put(sha1("le gustan las flores"), "le gustan las flores");
-    mariano.put(sha1("le gustan las flores"), "le gustan las flores");
-    stoika.put(sha1("le gustan las flores"), "le gustan las flores");
+		Thread.sleep(1000);
+	} catch (InterruptedException e) {
+		e.printStackTrace();
+	}
+    
+    System.out.println("emilio response: " + emilio.get(Peer.sha1("1")));
+    System.out.println("lina response: " + lina.get(Peer.sha1("2")));
   }
 
 }
