@@ -150,7 +150,6 @@ public class Peer implements Runnable
       socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, group, port));
       getValueSem.acquire();
       value = getValue;
-      getValueSem.release();
     } catch (IOException | InterruptedException e) {
       e.printStackTrace();
     }
@@ -291,7 +290,7 @@ public class Peer implements Runnable
           socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, group, port));
           for (Map.Entry<String, String> entry: hashTable.entrySet()) {
         	byte[] key = Base64.getDecoder().decode(entry.getKey());
-        	if (distance(myGuid, key) < distance(Base64.getDecoder().decode(cmd[0]), key)) {
+        	if (distance(myGuid, key) <= distance(Base64.getDecoder().decode(cmd[0]), key)) {
     		  try {
     		    msg = Base64.getEncoder().encodeToString(myGuid)
     		        + ":put:"
