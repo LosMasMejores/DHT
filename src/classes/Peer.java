@@ -60,11 +60,6 @@ public class Peer implements Runnable {
 
 		byte[] guid = getNode(key);
 
-		// if (Arrays.equals(guid, myGuid)) {
-		// hashTable.put(Base64.getEncoder().encodeToString(key), value);
-		// return guid;
-		// }
-
 		try {
 			String msg = Base64.getEncoder().encodeToString(myGuid) + ":node:"
 					+ Base64.getEncoder().encodeToString(guid) + ":Q:" + Base64.getEncoder().encodeToString(key)
@@ -92,21 +87,7 @@ public class Peer implements Runnable {
 		System.out.println(Base64.getEncoder().encodeToString(myGuid) + " start getting");
 
 		String value = "";
-
-		// value = hashTable.get(Base64.getEncoder().encodeToString(key));
-		// if (value != null) {
-		// return value;
-		// }
-
 		byte[] guid = getNode(key);
-
-		// if (Arrays.equals(guid, myGuid)) {
-		// value = hashTable.get(key);
-		// if (value == null) {
-		// value = "";
-		// }
-		// return value;
-		// }
 
 		try {
 			String msg = Base64.getEncoder().encodeToString(myGuid) + ":node:"
